@@ -14,11 +14,38 @@ const runConsumer = async () => {
   await consumer.connect();
   await consumer.subscribe({ topic: "notify", fromBeginning: true });
 
+  //This is for consuming messages one by one
+
+  // await consumer.run({
+  //   eachMessage: async ({ topic, partition, message }: EachMessagePayload) => {
+  //     const msgValue = message.value?.toString();
+  //     let mailSvc = Container.get(MailSvc);
+  //     mailSvc.sendMail(msgValue || "");
+  //   },
+  // });
+
+  //This is for consuming messages in Batches
+
   await consumer.run({
-    eachMessage: async ({ topic, partition, message }: EachMessagePayload) => {
-      const msgValue = message.value?.toString();
-      let mailSvc = Container.get(MailSvc);
-      mailSvc.sendMail(msgValue || "");
+    eachBatchAutoResolve: true,
+    eachBatch: async ({
+      batch,
+      resolveOffset,
+      heartbeat,
+      commitOffsetsIfNecessary,
+      uncommittedOffsets,
+      isRunning,
+      isStale,
+      pause,
+    }) => {
+      for (let message of batch.messages) {
+        const msgValue = message.value?.toString();
+        let mailSvc = Container.get(MailSvc);
+        mailSvc.sendMail(msgValue || "");
+
+        resolveOffset(message.offset);
+        await heartbeat();
+      }
     },
   });
 };

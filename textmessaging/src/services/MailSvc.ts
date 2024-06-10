@@ -6,8 +6,8 @@ export class MailSvc {
   private transporter: nodemailer.Transporter;
 
   private mailOptions = {
-    from: "<YOUR_ID>@hcltech.com",
-    to: "<Recipient's Emial Id>",
+    from: "<your emal>@gmail.com",
+    to: "recipient's email",
     subject: "Notification Message",
     text: "<Message Text>",
   };
@@ -19,13 +19,14 @@ export class MailSvc {
       port: 465,
       secure: true,
       auth: {
-        user: "<YOUR_ID>@gmail.com",
-        pass: "<Your App Password>",
+        user: "<your emal>",
+        pass: "your app password",
       },
     });
   }
 
   async sendMail(message: string) {
+    this.mailOptions.text = message;
     const info = await this.transporter.sendMail(this.mailOptions);
     console.log("Logging from Email Notifier-Email Sent");
   }
